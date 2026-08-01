@@ -1124,6 +1124,134 @@ The **Upload Bank Statement** screen provides a facility to upload official bank
 
 ---
 
+# Payment Verification Module
+
+## SCREEN 5.1 : PAYMENT VERIFICATION PAGE
+
+### 1. Overview
+The **Payment Verification** page provides a secure, member-facing interface to facilitate seamless rent collections. This page is accessed exclusively via a unique, secure payment link dispatched to the tenant through WhatsApp on their scheduled rent due date. The primary purpose of this screen is to display the member's current rent obligations, offer a selection of preferred UPI payment applications (such as Google Pay, PhonePe, or Paytm), and provide a facility to upload a payment screenshot as proof of transaction. Upon successful submission, the system automatically transitions the payment status from 'Pending' to 'In Review', displaying a confirmation popup to assure the member that their transaction is undergoing manual verification within a 48-hour SLA.
+
+### 2. Screen Preview
+
+```text
++------------------------------------------------------------------------------------+
+|                        Monthly Rent Payment                                        |
+|------------------------------------------------------------------------------------|
+| Member Name  : Rahul Patel                                                         |
+| PG Name      : Sunshine PG                                                         |
+| Room         : 102                                                                 |
+| Amount       : ₹6,000                                                              |
+| Due Date     : 05-Aug-2026                                                         |
+|------------------------------------------------------------------------------------|
+| Select Payment Method                                                              |
+|                                                                                    |
+| ( ) Google Pay                                                                     |
+| ( ) PhonePe                                                                        |
+| ( ) Paytm                                                                          |
+|                                                                                    |
+|                         [ Pay ₹6,000 ]                                             |
+|                                                                                    |
+|------------------------------------------------------------------------------------|
+| Note                                                                               |
+| Please upload a payment screenshot in which the Transaction ID is clearly visible. |
+| Screenshots without a visible Transaction ID may be rejected during verification.  |
+|------------------------------------------------------------------------------------|
+| Upload Payment Screenshot                                                          |
+| [ Choose File ] (No file chosen)                                                   |
+|                                                                                    |
+|                         [ Submit Payment ]                                         |
++------------------------------------------------------------------------------------+
+```
+
+After submission display popup:
+
+```text
++---------------------------------------------------------------+
+|                 Payment Submitted Successfully                |
+|---------------------------------------------------------------|
+| Thank you for your payment.                                   |
+|                                                               |
+| Your payment has been submitted successfully.                 |
+|                                                               |
+| Payment Status : In Review                                    |
+|                                                               |
+| Our team will verify your payment within 48 hours.            |
+|                                                               |
+| You will receive confirmation once verification is completed. |
+|                                                               |
+|                     [ Close ]                                 |
++---------------------------------------------------------------+
+```
+
+### 3. Screen Fields Table
+
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Member Name** | Label | N/A | Read-only. Must match database record. | `Rahul Patel` | Informs member of the account being paid. |
+| **PG Name** | Label | N/A | Read-only. | `Sunshine PG` | Property identifier. |
+| **Room Number** | Label | N/A | Read-only. | `102` | Member's allocated room. |
+| **Monthly Rent** | Label | N/A | Read-only. Formatted as currency. | `₹6,000` | The exact payable amount. |
+| **Due Date** | Label | N/A | Read-only. Formatted as DD-MMM-YYYY. | `05-Aug-2026` | - |
+| **Payment Method** | Radio Group | Yes | Exactly one selection is required. | `Google Pay` | Controls the UPI deep-link routing. |
+| **Google Pay Option** | Radio Button | No | Belongs to Payment Method group. | `Selected` | Triggers Google Pay Intent. |
+| **PhonePe Option** | Radio Button | No | Belongs to Payment Method group. | `Unselected` | Triggers PhonePe Intent. |
+| **Paytm Option** | Radio Button | No | Belongs to Payment Method group. | `Unselected` | Triggers Paytm Intent. |
+| **Pay Button** | Button | N/A | Disabled until a payment method is selected. | `Pay ₹6,000` | Initiates the selected UPI payment flow. |
+| **Instruction Note**| Text Block | N/A | Read-only informative text. | `Please upload a payment...` | Guides member on acceptable proofs. |
+| **Payment Screenshot Upload** | File Input | Yes | Accepts `.jpg`, `.jpeg`, `.png`. Max size validated. | `screenshot.png` | Required for manual verification. |
+| **Submit Button** | Button | N/A | Disabled if no file is selected or during upload. | `Submit Payment` | Finalizes the transaction submission. |
+| **Success Popup** | Modal | N/A | Displayed only on successful backend submission. | `Payment Submitted...` | Confirms state change to 'In Review'. |
+
+### 4. Validations
+
+**General Validations:**
+*   **Payment Link Validity:** The accessed payment link must be structurally valid, authentic, and securely tied to a specific rent invoice.
+*   **Link Expiration:** The payment link must strictly expire upon successful payment submission or after passing its system-configured validity period (e.g., 72 hours).
+*   **Record Existence:** The system must verify that the corresponding Member record and Rent record still exist and are active in the database.
+*   **Already Paid Check:** The page must reject access and display an "Already Paid" message if the associated rent record's status is already marked as 'Paid'.
+
+**Payment Method Validations:**
+*   **Single Selection:** Exactly one payment method (Google Pay, PhonePe, or Paytm) must be selected before payment initiation.
+*   **Button State:** The "Pay" button must remain visually disabled and functionally inactive until a valid payment method is selected.
+
+**Screenshot Upload Validations:**
+*   **Mandatory Field:** Uploading a payment screenshot is strictly mandatory. Submission cannot proceed without a selected file.
+*   **Allowed Formats:** The file input must restrict and validate formats to only allow `.jpg`, `.jpeg`, and `.png` image files.
+*   **Size Limitation:** Enforce a maximum file size limit (e.g., 5MB) on the client and server side to prevent resource exhaustion.
+*   **File Integrity:** Perform a backend validation to ensure the uploaded file is not a corrupted image or a malicious disguised file.
+*   **Upload Progress:** Implement upload progress handling (e.g., progress bar or percentage) to inform the user during large file uploads on slower networks.
+
+**Transaction Screenshot Specifics:**
+*   **Visibility Warning:** Clearly display a persistent note informing the member that the Transaction ID must be explicitly visible in the uploaded image.
+*   **Empty Rejection:** Reject the final submission and display an inline error if the user attempts to submit without a successfully attached screenshot.
+
+**Submission Validations:**
+*   **Duplicate Prevention:** Disable the Submit button immediately upon the first click to prevent duplicate submissions via rapid clicking.
+*   **Processing State:** Show a loading spinner or "Processing..." text on the Submit button while the file is uploading and the API request is in flight.
+*   **Success Feedback:** Display the predefined success popup modal immediately after receiving a 200 OK response from the submission endpoint.
+
+**Status Update Behavior:**
+*   After a successful submission, the backend must autonomously update the rent record's payment status to `In Review`. This ensures the administration dashboard reflects the pending verification state for manual admin review.
+
+**Success Popup Content:**
+*   The system must explicitly display the following confirmation message in the popup:
+    *"Your payment has been submitted successfully.*
+    *Payment Status: In Review*
+    *Our team will verify your payment within 48 hours.*
+    *You will receive confirmation once the verification is completed."*
+
+**Error Handling & Edge Cases:**
+*   **Invalid payment link:** Display "The payment link you clicked is invalid or malformed."
+*   **Expired payment link:** Display "This payment link has expired. Please request a new link from your PG administrator."
+*   **Missing payment screenshot:** Display "Please attach a payment screenshot before submitting."
+*   **Unsupported file format:** Display "Invalid file format. Only JPG, JPEG, and PNG images are allowed."
+*   **File upload failed:** Display "Failed to upload the screenshot. Please check your connection and try again."
+*   **Server unavailable:** Display "Our servers are currently unreachable. Please try submitting again in a few minutes."
+*   **Duplicate payment submission:** Display "A payment proof for this rent cycle is already under review."
+*   **Already paid rent:** Display "This rent cycle has already been marked as Paid. No further action is required."
+
+---
+
 # Filter Configuration
 
 # MODULE 1
