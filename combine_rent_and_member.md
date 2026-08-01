@@ -104,8 +104,8 @@ The **Add Member** screen facilitates the comprehensive registration of a new PG
 | [ Dropdown (1-31) v ]        [ Dropdown (Days) v ]                                              |
 |                                                                                                 |
 | Member Status                                                                                   |
-| Status *                     Reason                                                             |
-| [ Dropdown v ]               [______________________]                                            |
+| Status *                                                                                        |
+| [ Dropdown v ]                                                                                  |
 |                                                                                                 |
 |                            [ Cancel ] [ Save ]                                                  |
 +-------------------------------------------------------------------------------------------------+
@@ -146,7 +146,6 @@ The **Add Member** screen facilitates the comprehensive registration of a new PG
 | **Rent Due Date** | Dropdown | Yes | Integer from 1 to 31. | `5` | Day of the month rent is expected. |
 | **Notice Period** | Dropdown | Yes | Predefined options (e.g., 15 Days, 30 Days). | `30 Days` | - |
 | **Status** | Dropdown | Yes | Active, Notice Period, Inactive. | `Active` | - |
-| **Reason** | Text Area | No | Required only if Status = 'Notice Period'. Max 500 chars. | `Relocating` | Appears conditionally. |
 | **Save** | Button | N/A | Submits the form data. | N/A | Disabled during API call. |
 | **Cancel** | Button | N/A | Discards form and returns to Member List. | N/A | - |
 
