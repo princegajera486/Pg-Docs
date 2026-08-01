@@ -1124,3 +1124,179 @@ The **Upload Bank Statement** screen provides a facility to upload official bank
 
 ---
 
+# Filter Configuration
+
+# MODULE 1
+
+Dashboard Filters
+
+## Overview
+
+Dashboard filters are critical for providing dynamic, real-time insights tailored to specific operational contexts. Filtering allows the administrator to slice and dice high-level business data across various dimensions such as properties, timeframes, or tenant demographics. Dashboard filters should dynamically update every KPI, Chart, Table, and Alert without requiring a full page reload, ensuring a highly interactive and responsive executive overview.
+
+---
+
+## Filter List
+
+| Filter | Type | Values | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **PG** | Dropdown | All, [List of Active PGs] | All | Filters data for a specific property or all properties. |
+| **Property Type** | Dropdown | All, PG, Apartment | All | Filters data based on the business model type. |
+| **Gender Type** | Dropdown | All, Male, Female, Co-Living | All | Segregates occupancy and revenue by gender allocation. |
+| **Member Status** | Dropdown | All, Active, Notice, Inactive | All | Narrows down metrics based on current tenant state. |
+| **Rent Status** | Dropdown | All, Paid, Pending, Overdue | All | Filters financial figures and lists by collection status. |
+| **Date Range** | Date Picker | Custom From & To Dates | Current Month | Narrows data to a specific operational window. |
+| **Month** | Dropdown | Jan, Feb, Mar, etc. | Current Month | Filters monthly recurring metrics. |
+| **Year** | Dropdown | 2024, 2025, 2026, etc. | Current Year | Filters annual aggregations. |
+
+---
+
+## Filter Preview
+
+```text
++------------------------------------------------------------------------------------------------------+
+| PG ▼ | Property Type ▼ | Member Status ▼ | Rent Status ▼ | Month ▼ | Year ▼ | Reset |
++------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## Filter Behaviour
+
+*   **KPI Cards:** Automatically recalculate counts (e.g., Total Occupied Beds) and financial sums (e.g., Rent Collected) based strictly on the applied filters.
+*   **Charts:** Redraw axes, datasets, and legends instantly to reflect the filtered demographic or financial window.
+*   **Tables:** Re-query and render only the rows that match the filter criteria (e.g., filtering for "Overdue" will only populate the Overdue Rent table).
+*   **Alerts:** Dynamically hide or show operational alerts depending on the context (e.g., filtering for a specific PG will only show alerts relevant to that property).
+
+---
+
+# MODULE 2
+
+PG Management Filters
+
+## Overview
+
+Filtering PG records is essential for administrators to efficiently manage and navigate a large portfolio of properties. It allows quick isolation of specific properties based on operational status, geographical location, or configuration, reducing time spent searching and streamlining property-specific administrative actions.
+
+---
+
+## Filter List
+
+| Filter | Type | Values | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **PG Name** | Text Input | User Input (Alphanumeric) | Empty | Filters properties by partial or full name match. |
+| **PG Code** | Text Input | User Input (Alphanumeric) | Empty | Filters properties by unique identifier. |
+| **Property Type** | Dropdown | All, PG, Apartment | All | Segregates by structural business model. |
+| **Gender Type** | Dropdown | All, Male, Female, Co-Living | All | Filters properties catering to specific demographics. |
+| **Property Status** | Dropdown | All, Active, Inactive | Active | Hides or shows non-operational properties. |
+| **City** | Dropdown | All, [List of Cities] | All | Filters properties by geographical city. |
+| **State** | Dropdown | All, [List of States] | All | Filters properties by geographical state. |
+
+---
+
+## Filter Preview
+
+```text
++----------------------------------------------------------------------------------------------------+
+| PG ▼ | Type ▼ | Gender ▼ | Status ▼ | City ▼ | State ▼ | Reset |
++----------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## Filter Behaviour
+
+Applying any filter instantly triggers a backend query to refine the PG list. Filtering allows identifying active vs inactive properties quickly, or drilling down into geographical spread. The table must recalculate pagination dynamically based on the filtered dataset. Sorting mechanisms must respect the currently active filters.
+
+---
+
+# MODULE 3
+
+Member Management Filters
+
+## Overview
+
+Filtering member records is a critical function to handle tenant lifecycles efficiently. As member volumes grow, administrators require robust filtering to locate specific individuals, monitor occupancy trends, track upcoming departures, or identify tenants sharing specific attributes like location or occupation.
+
+---
+
+## Filter List
+
+| Filter | Type | Values | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Member Name** | Text Input | User Input (Alphanumeric) | Empty | Filters members by their full or partial name. |
+| **Mobile Number** | Text Input | User Input (Numeric) | Empty | Filters members by their contact number. |
+| **PG Name** | Dropdown | All, [List of PGs] | All | Isolates tenants residing in a specific property. |
+| **Room Number** | Text Input | User Input (Alphanumeric) | Empty | Narrows down to members in a specific room. |
+| **Bed Number** | Text Input | User Input (Alphanumeric) | Empty | Locates the specific bed allocation. |
+| **Occupation** | Dropdown | All, Student, Working Pro. | All | Filters by tenant professional status. |
+| **Gender** | Dropdown | All, Male, Female | All | Filters tenants by gender. |
+| **Member Status** | Dropdown | All, Active, Notice, Inactive | Active | Filters tenants based on their current residency phase. |
+| **Joining Date** | Date Picker | Custom Date Range | Empty | Filters members onboarded within a specific period. |
+| **City** | Dropdown | All, [List of Cities] | All | Filters tenants originating from a specific city. |
+
+---
+
+## Filter Preview
+
+```text
++----------------------------------------------------------------------------------------------------------------+
+| Member ▼ | PG ▼ | Room ▼ | Occupation ▼ | Gender ▼ | Status ▼ | Joining Date ▼ | Reset |
++----------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## Filter Behaviour
+
+Applying filters immediately subsets the member directory. Searching by Name/Mobile works in tandem with dropdown filters (e.g., searching "Rahul" while filtered by "Active" status). The paginated table dynamically adjusts to display only matching results. The 'Reset' action clears all applied parameters, restoring the default 'Active' member view.
+
+---
+
+# MODULE 4
+
+Rent Management Filters
+
+## Overview
+
+Filtering rent records is the cornerstone of revenue tracking. It empowers administrators to rapidly identify payment bottlenecks, isolate overdue accounts, project upcoming cash flows, and reconcile financial data month-over-month. Effective filtering ensures no outstanding dues slip through the cracks.
+
+---
+
+## Filter List
+
+| Filter | Type | Values | Default | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Member Name** | Text Input | User Input (Alphanumeric) | Empty | Filters financial records for a specific tenant. |
+| **PG Name** | Dropdown | All, [List of PGs] | All | Filters rent collections for a specific property. |
+| **Room Number** | Text Input | User Input (Alphanumeric) | Empty | Isolates rent data for a particular room. |
+| **Payment Status** | Dropdown | Paid, Pending, Overdue | All | Filters records based on rent collection status. |
+| **Due Date** | Date Picker | Custom Date Range | Current Month | Filters records based on expected payment dates. |
+| **Payment Date** | Date Picker | Custom Date Range | Empty | Filters records based on actual transaction dates. |
+| **Rent Amount** | Number Input | Custom Range (Min/Max) | Empty | Filters records by base rental value. |
+| **Outstanding Amount**| Number Input | Custom Range (Min/Max) | Empty | Filters records by remaining balance due. |
+| **Month** | Dropdown | Jan, Feb, Mar, etc. | Current Month | Isolates the billing cycle month. |
+| **Year** | Dropdown | 2024, 2025, 2026, etc. | Current Year | Isolates the billing cycle year. |
+
+---
+
+## Filter Preview
+
+```text
++----------------------------------------------------------------------------------------------------------------------+
+| PG ▼ | Member ▼ | Status ▼ | Due Date ▼ | Payment Date ▼ | Month ▼ | Year ▼ | Reset |
++----------------------------------------------------------------------------------------------------------------------+
+```
+
+---
+
+## Filter Behaviour
+
+Every filter dynamically narrows down the dataset presented in the rent management view to address highly specific administrative queries.
+
+*   Multiple filters can be applied simultaneously (e.g., 'Overdue' AND 'PG1' AND 'Month: August') to drill down into complex datasets.
+*   Filters should persist across views and stay active until the 'Reset' button is explicitly clicked, preventing the loss of context during operations.
+*   Search should work together with filters seamlessly; keyword inputs refine the currently filtered dataset.
+*   Pagination should update immediately after filtering, reflecting the correct number of pages for the filtered record set.
+*   Sorting should work after filtering, accurately ordering the subset of data generated by the filter conditions.
+*   Dashboard data should refresh instantly when filters change, ensuring that metrics like 'Pending Rent' align with the records displayed.
