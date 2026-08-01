@@ -93,6 +93,98 @@ The system will prompt the user to provide their valid credentials (Email Addres
 
 ---
 
+# Dashboard Module
+
+## 1. OVERVIEW
+The **Dashboard** serves as the central landing page for the PG owner/administrator immediately following a successful login. It acts as the executive control center, seamlessly consolidating real-time data from the **PG Management**, **Member Management**, and **Rent Management** modules. Its primary purpose is to provide the owner with a complete, at-a-glance overview of the business health. By leveraging real-time KPIs, visual charts, actionable tables, and automated alerts, the dashboard empowers the administrator to monitor occupancy, track member statistics, assess rent collection performance, manage outstanding dues, and respond promptly to critical operational events.
+
+## 2. DASHBOARD PREVIEW
+
+```text
++-------------------------------------------------------------------------------------------------------------------------+
+| Dashboard                                                                                         Welcome, Admin        |
+|-------------------------------------------------------------------------------------------------------------------------|
+| Total PGs | Total Rooms | Occupied Beds | Occupancy Rate | Active Members | Rent Collected | Pending Rent | Revenue     |
+|    5      |     120     |      200      |      85%       |      200       |    ₹12,00,000  |   ₹50,000    | ₹12,50,000  |
+|-------------------------------------------------------------------------------------------------------------------------|
+| Occupancy Overview (Doughnut)       | Monthly Rent Collection Trend (Line Chart)                                     |
+|-------------------------------------|--------------------------------------------------------------------------------|
+| [ Chart Area ]                      | [ Chart Area ]                                                                 |
+|-------------------------------------------------------------------------------------------------------------------------|
+| Member Status Distribution (Pie)    | Revenue by PG (Horizontal Bar)                                                 |
+|-------------------------------------|--------------------------------------------------------------------------------|
+| [ Chart Area ]                      | [ Chart Area ]                                                                 |
+|-------------------------------------------------------------------------------------------------------------------------|
+| Upcoming Due Table                  | Recent Payments Table                                                           |
+|-------------------------------------------------------------------------------------------------------------------------|
+| Alerts Box (e.g., 5 Overdue Rents, 2 Low Occupancy PGs)                                                                 |
++-------------------------------------------------------------------------------------------------------------------------+
+```
+
+## 3. KPI CARDS
+
+| KPI | Description | Formula | Data Source |
+| :--- | :--- | :--- | :--- |
+| **Total PGs** | Total number of properties registered. | Count of all PGs. | PG Management |
+| **Active PGs** | Properties currently operational. | Count of PGs where Status = Active. | PG Management |
+| **Inactive PGs** | Properties temporarily or permanently closed. | Count of PGs where Status = Inactive. | PG Management |
+| **Total Rooms** | Total room capacity across all PGs. | Sum of Rooms across all Active PGs. | PG Management |
+| **Total Beds** | Total bed capacity across all PGs. | Sum of all configured beds across Active PGs. | PG Management |
+| **Occupied Beds** | Total beds currently allocated to Active Members. | Count of beds assigned to Members where Status = Active or Notice Period. | Member Management |
+| **Vacant Beds** | Total beds available for new tenants. | Total Beds - Occupied Beds. | PG & Member Management |
+| **Occupancy Rate (%)** | Percentage of beds currently occupied. | (Occupied Beds / Total Beds) * 100 | PG & Member Management |
+| **Total Members** | Total number of registered members (all time). | Count of all Members. | Member Management |
+| **Active Members** | Members currently residing in a PG. | Count of Members where Status = Active. | Member Management |
+| **Members in Notice Period** | Members who are preparing to vacate. | Count of Members where Status = Notice Period. | Member Management |
+| **Inactive Members** | Members who have permanently vacated. | Count of Members where Status = Inactive. | Member Management |
+| **New Members This Month**| Members onboarded in the current month. | Count of Members created in the current calendar month. | Member Management |
+| **Total Monthly Rent** | Total rent billed for the current month. | Sum of Monthly Rent for all Active/Notice members for current month. | Rent Management |
+| **Rent Collected This Month** | Rent successfully received for the current month. | Sum of Paid rent amounts for the current month. | Rent Management |
+| **Pending Rent** | Total rent amount due but not yet past the due date. | Sum of outstanding rent where Due Date >= Today. | Rent Management |
+| **Overdue Rent** | Total rent amount past the due date. | Sum of outstanding rent where Due Date < Today. | Rent Management |
+| **Collection Percentage** | Efficiency of rent collection for the month. | (Rent Collected / Total Monthly Rent) * 100 | Rent Management |
+| **Expected Monthly Revenue** | Total projected revenue for the month. | Sum of (Monthly Rent + Maintenance Charge) for all active members. | Rent Management |
+
+## 4. CHARTS
+
+| Chart Name | Chart Type | Description | Data Source |
+| :--- | :--- | :--- | :--- |
+| **Occupancy Overview** | Doughnut / Pie | Visualizes the ratio of Occupied Beds vs Vacant Beds across the business. Identifies capacity utilization. | PG & Member Management |
+| **Member Status Distribution** | Pie Chart | Visualizes the proportion of Active, Notice Period, and Inactive members. Helps forecast upcoming vacancies. | Member Management |
+| **Monthly Rent Collection** | Line Chart | Tracks the trend of Collected Rent month-wise over the last 12 months. Identifies seasonal revenue variations. | Rent Management |
+| **Rent Status** | Bar Chart | Compares the total volume of Paid, Pending, and Overdue rent for the current billing cycle. | Rent Management |
+| **Revenue by PG** | Horizontal Bar Chart | Ranks PGs based on revenue generated. Helps identify top-performing properties. | PG & Rent Management |
+| **Occupancy by PG** | Horizontal Bar Chart | Compares the number of Occupied Beds in every PG. Highlights properties needing marketing efforts. | PG & Member Management |
+| **Upcoming Due Trend** | Column Chart | Forecasts upcoming rent dues grouped by time intervals (Next 7 Days, 15 Days, 30 Days) to aid cash flow projection. | Rent Management |
+
+## 5. TABLES
+
+| Table Name | Description | Columns |
+| :--- | :--- | :--- |
+| **Upcoming Rent Due** | Lists members whose rent is approaching the due date. Enables proactive follow-ups before rent becomes overdue. | Member, PG, Room, Rent, Due Date, Days Remaining |
+| **Overdue Rent** | Highlights critical payment defaults requiring immediate administrative action or penalty application. | Member, PG, Room, Outstanding Amount, Due Date, Days Overdue |
+| **Recent Payments** | A quick ledger of the most recently logged or reconciled payment transactions for rapid cross-verification. | Member, PG, Amount, Payment Date, Payment Mode |
+| **Recently Added Members** | Displays the latest tenant onboardings to track recent sales and occupancy growth. | Member, PG, Room, Joining Date |
+
+## 6. ALERTS
+
+| Alert | Priority | Trigger Condition | Action Required |
+| :--- | :--- | :--- | :--- |
+| **Rent Due Today** | High | Member's Rent Due Date equals current system date and Status != Paid. | Send reminder to member or follow up for collection. |
+| **Rent Overdue** | Critical | Member's Rent Due Date has passed and Status != Paid. | Initiate overdue follow-up or apply late penalty. |
+| **Member in Notice Period** | Medium | Member Status is changed to 'Notice Period'. | Prepare for checkout process and market the upcoming vacant bed. |
+| **Low Occupancy PG** | High | A specific PG's Occupancy Rate drops below a defined threshold (e.g., 50%). | Focus marketing and sales efforts on this property. |
+| **Fully Occupied PG** | Low | A specific PG's Occupancy Rate reaches 100%. | None immediate; consider expansion or optimizing rent yields. |
+| **Inactive PG** | Medium | A PG's Status is manually changed to 'Inactive'. | Verify that no active members are mistakenly mapped to it. |
+| **Recently Added Member** | Low | A new member is registered in the system within the last 24 hours. | Ensure welcome kit or onboarding formalities are complete. |
+| **Upcoming Vacant Bed** | Medium | Calculated when a member in a specific bed enters their Notice Period. | Update external listings to reflect future availability. |
+| **Missing Rent Payment** | High | Rent record not generated or missing for an active member for the current billing cycle. | Systematically generate or manually investigate missing invoice. |
+| **Failed Bank Statement Processing** | Critical | An uploaded Bank Statement PDF fails to parse or reconcile due to incorrect password or format. | Re-upload correct document or verify file integrity. |
+| **Duplicate Member Detected** | High | System detects another active member attempting entry with identical Aadhaar or Mobile. | Merge records or reject duplicate registration. |
+| **Room Capacity Exceeded** | Critical | Number of Active Members mapped to a Room exceeds its defined 'Room Sharing' limit. | Reassign tenants to correct rooms immediately. |
+
+---
+
 # PG Management Module
 
 ## SCREEN 2.1 : LIST PG
@@ -774,3 +866,261 @@ The **Deactivate Member** screen functions as a confirmation checkpoint before s
 *   **Handle Already Inactive Member:** If the member is already deactivated, the backend should gracefully reject the request, and the frontend should refresh the list.
 *   **Prevent Deactivation if Validation Fails:** If business rules dictate that a member cannot be deactivated (e.g., pending rent dues), display a blocking error message: "Cannot deactivate member with pending dues."
 *   **Proper Messages:** Show a success toast ("Member deactivated successfully") upon successful deactivation, or an error toast describing why the deactivation failed.
+
+---
+
+# Rent Management Module
+
+## SCREEN 4.1 : RENT LIST
+
+### 1. Overview
+The **Rent List** screen acts as the financial command center for the PG Management System, focusing specifically on member rent collections and tracking. It displays a consolidated, real-time list of all active members whose rent is categorized as Due Today, Upcoming Due, or Overdue. This interface allows administrators to track pending payments, initiate manual payment entries, edit discrepancies, and upload bank statements for automated payment reconciliation.
+
+### 2. Screen Preview
+
+```text
++----------------------------------------------------------------------------------------------------------------------------------------+
+| Rent Management                                                       Upload Bank Statement                                           |
+|----------------------------------------------------------------------------------------------------------------------------------------|
+| Search : [__________________________]                                                                              Filter              |
+|                                                                                                                                        |
+| Member | PG | Room | Rent | Due Date | Status | Payment Date | Days Remaining | Actions                                             |
+|--------|----|------|------|----------|--------|--------------|----------------|-----------------------------------------------------|
+| Rahul  | PG1| 101  | 6000 | 05-Aug   | Due    | -            | 2 Days         | View | Edit | Mark as Paid                           |
+| Amit   | PG1| 102  | 5500 | 01-Aug   | Overdue| -            | -2 Days        | View | Edit | Mark as Paid                           |
+|                                                                                                                                        |
+| Showing 1-10 of 50 Records                                                       Previous | Next                                     |
++----------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+### 3. Screen Fields Table
+
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Upload Bank Statement** | Button | N/A | Opens the "Upload Bank Statement" modal. | N/A | Prominently placed for quick access. |
+| **Search** | Text Input | No | Accepts alphanumeric input. Partial matching supported. | `Rahul` | Searches across Member Name, PG, and Room. |
+| **Filter** | Button | N/A | Opens advanced filters (e.g., Status: Overdue). | N/A | - |
+| **Member** | Data Column | N/A | Sortable. Displays Member Name. | `Rahul Patel` | - |
+| **PG** | Data Column | N/A | Sortable. | `Sai PG` | - |
+| **Room** | Data Column | N/A | Sortable. | `101` | - |
+| **Rent** | Data Column | N/A | Sortable. Numeric format. | `6000.00` | - |
+| **Due Date** | Data Column | N/A | Sortable. Date format. | `05-Aug-2026` | - |
+| **Status** | Data Column | N/A | Sortable. (Upcoming, Due Today, Overdue). | `Overdue` | Color-coded (e.g., Red for Overdue). |
+| **Payment Date** | Data Column | N/A | Sortable. Date format. | `-` | Usually empty here unless filtered for 'Paid'. |
+| **Days Remaining** | Data Column | N/A | Sortable. Calculated field. | `2 Days` | Can display negative for Overdue. |
+| **View** | Action Button | N/A | Redirects to View Rent Details screen. | N/A | Available on all rows. |
+| **Edit** | Action Button | N/A | Redirects to Edit Rent screen. | N/A | - |
+| **Mark as Paid** | Action Button | N/A | Opens the "Mark as Paid" modal. | N/A | - |
+| **Records Per Page** | Dropdown | No | Valid integer selection. | `10` | Controls pagination size. |
+| **Pagination (Prev/Next)**| Buttons | N/A | Disabled if on the first/last page. | N/A | - |
+| **Total Records** | Label | N/A | Dynamically reflects search/filter results. | `Showing 1-10 of 50 Records` | - |
+
+### 4. Validations
+
+*   **Search Functionality:** 
+    *   Search must support partial matching (e.g., typing "Rah" matches "Rahul").
+    *   Search must automatically ignore and trim leading/trailing spaces.
+*   **Empty State:** 
+    *   If no records exist, display a friendly empty state message (e.g., "No rent records found for the current criteria").
+*   **Invalid Page Handling:**
+    *   If the user navigates to an invalid/non-existent page via URL, seamlessly redirect to Page 1.
+*   **Active Members Only:**
+    *   Only rent records for active members should appear in this default list. Inactive/vacated members should be excluded unless explicitly filtered.
+*   **Completed Rent Handling:**
+    *   Members whose rent is completely paid for the current cycle should not appear in this default list (unless the 'Paid' filter is applied).
+*   **Action Handling:**
+    *   Confirmation is required before marking rent as paid via the Mark as Paid modal.
+
+---
+
+## SCREEN 4.2 : VIEW RENT DETAILS
+
+### 1. Overview
+The **View Rent Details** screen provides a comprehensive, read-only summary of a specific member's rent configuration and payment status for the current billing cycle. It allows administrators to securely review rent breakdowns, due dates, outstanding amounts, and payment histories without the risk of accidental data modification.
+
+### 2. Screen Preview
+
+```text
++------------------------------------------------------------------------------------+
+| View Rent Details                                                                  |
+|------------------------------------------------------------------------------------|
+| Member Information                                                                 |
+| Member Name                  PG Name                   Room Number                 |
+| Rahul Patel                  Sai PG                    101                         |
+| Bed Number                                                                         |
+| A                                                                                  |
+|                                                                                    |
+| Rent Breakdown                                                                     |
+| Monthly Rent                 Security Deposit          Maintenance Charge          |
+| 6000.00                      10000.00                  500.00                      |
+|                                                                                    |
+| Payment Status                                                                     |
+| Due Date                     Payment Status            Outstanding Amount          |
+| 05-Aug-2026                  Overdue                   6500.00                     |
+| Payment Date                 Remarks                                               |
+| N/A                          Late payment fee may apply.                           |
+|                                                                                    |
+|                                                     [ Back ] [ Edit ]              |
++------------------------------------------------------------------------------------+
+```
+
+### 3. Screen Fields Table
+
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Member Name** | Label | N/A | Read-only display. | `Rahul Patel` | - |
+| **PG Name** | Label | N/A | Read-only display. | `Sai PG` | - |
+| **Room Number** | Label | N/A | Read-only display. | `101` | - |
+| **Bed Number** | Label | N/A | Read-only display. | `A` | - |
+| **Monthly Rent** | Label | N/A | Read-only display. Formatted as currency. | `6000.00` | - |
+| **Security Deposit** | Label | N/A | Read-only display. Formatted as currency. | `10000.00` | - |
+| **Maintenance Charge** | Label | N/A | Read-only display. Formatted as currency. | `500.00` | - |
+| **Due Date** | Label | N/A | Read-only display. Date format. | `05-Aug-2026` | - |
+| **Payment Status** | Label | N/A | Read-only display. | `Overdue` | - |
+| **Outstanding Amount** | Label | N/A | Read-only display. Formatted as currency. | `6500.00` | Monthly Rent + Maintenance |
+| **Payment Date** | Label | N/A | Read-only display. | `N/A` | Displays date if paid. |
+| **Remarks** | Label | N/A | Read-only display. | `Late payment fee may apply.` | Displays 'N/A' if empty. |
+| **Back** | Button | N/A | Redirects to "Rent List". | N/A | - |
+| **Edit** | Button | N/A | Redirects to "Edit Rent" screen. | N/A | Optional based on status. |
+
+### 4. Validations
+
+*   **Rent Record Must Exist:** If a user accesses an invalid Rent ID via URL, display an error page or redirect to "Rent List" with a toast message.
+*   **Read-Only Display:** All data must be rendered as non-editable text labels. No input fields should be accessible.
+*   **Handle Inactive Members:** If the associated member is inactive, display a clear visual warning banner (e.g., "Note: This tenant has vacated.").
+
+---
+
+## SCREEN 4.3 : EDIT RENT
+
+### 1. Overview
+The **Edit Rent** screen enables administrators to modify specific financial details for a member's current billing cycle before the payment is formally marked as completed. It is useful for making one-off adjustments, waiving maintenance fees, altering due dates for a specific month, or adding administrative remarks.
+
+### 2. Screen Preview
+
+```text
++------------------------------------------------------------------------------------+
+| Edit Rent Details                                                                  |
+|------------------------------------------------------------------------------------|
+| (Member: Rahul Patel - Sai PG - Room 101)                                          |
+|                                                                                    |
+| Monthly Rent *          Maintenance Charge *      Due Date *                       |
+| [6000.00________]       [500.00_________]         [05-Aug-2026____]                |
+|                                                                                    |
+| Remarks                                                                            |
+| [Late payment fee may apply.____________________________________________]          |
+|                                                                                    |
+|                                                     [ Cancel ] [ Update ]          |
++------------------------------------------------------------------------------------+
+```
+
+### 3. Screen Fields Table
+
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Monthly Rent** | Number Input | Yes | Pre-filled. Positive number. Max 2 decimal places. | `6000.00` | Edits apply to current cycle. |
+| **Maintenance Charge** | Number Input | Yes | Pre-filled. Positive number or 0. | `500.00` | - |
+| **Due Date** | Date Picker | Yes | Pre-filled. Valid date format. | `05-Aug-2026` | - |
+| **Remarks** | Text Area | No | Pre-filled. Max 500 chars. | `Late payment...` | - |
+| **Update** | Button | N/A | Submits changes. Disabled during API call. | N/A | Validates fields before submission. |
+| **Cancel** | Button | N/A | Discards changes, redirects back. | N/A | - |
+
+### 4. Validations
+
+*   **Existing Data Loading:** On initial load, all fields must accurately reflect the rent details currently stored in the database.
+*   **Required Fields:** All mandatory fields (*) must contain valid data before allowing an update.
+*   **Numeric Validation for Rent:** `Monthly Rent` and `Maintenance Charge` must strictly accept positive numeric values and handle up to 2 decimal places.
+*   **Due Date Validation:** Must be a valid, real date.
+*   **Character Limits:** `Remarks` must not exceed the defined database column size (e.g., 500 chars). Restrict typing beyond this limit.
+*   **Update Confirmation:** Prompt a confirmation dialog before applying financial changes to ensure accuracy.
+
+---
+
+## SCREEN 4.4 : MARK AS PAID
+
+### 1. Overview
+The **Mark as Paid** screen is a dedicated modal used to manually confirm and record the receipt of a member's rent payment. This action formally updates the outstanding balance, logs the transaction date, specifies the payment method, and updates the rent status to 'Paid' without deleting or archiving the core rent record.
+
+### 2. Screen Preview
+
+```text
++------------------------------------------------------+
+|                  Mark Rent as Paid                   |
+|------------------------------------------------------|
+| Member : Rahul Patel                                 |
+| Rent Amount : ₹6,500                                 |
+|                                                      |
+| Payment Date * : [ 05-Aug-2026 (Date Picker) ]       |
+| Payment Mode * : [ Dropdown v ]                      |
+| Remarks        : [_________________________]         |
+|                                                      |
+|      [ Cancel ]          [ Confirm Payment ]         |
++------------------------------------------------------+
+```
+
+### 3. Screen Fields Table
+
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Payment Date** | Date Picker | Yes | Defaults to current date. Cannot be a future date. | `05-Aug-2026` | - |
+| **Payment Mode** | Dropdown | Yes | Value in [Cash, UPI, Bank Transfer, Cheque, Card]. | `UPI` | - |
+| **Remarks** | Text Input | No | Max 255 chars. | `Paid via Google Pay`| Transaction ID can be stored here. |
+| **Confirm Payment** | Button | N/A | Triggers API to mark rent as paid. | N/A | Disabled upon click to prevent double submission. |
+| **Cancel** | Button | N/A | Closes the popup. | N/A | - |
+
+### 4. Validations
+
+*   **Required Fields:** `Payment Date` and `Payment Mode` must be provided.
+*   **Payment Date Validation:** The selected date cannot be in the future.
+*   **Prevent Duplicate Payment Confirmation:** The "Confirm Payment" button must enter a loading state and disable immediately upon click to prevent multiple overlapping API requests.
+*   **Handle Already Paid Rent:** If the rent was marked paid concurrently (e.g., in another session or via automated bank upload), reject the request gracefully and refresh the UI.
+*   **Proper Messages:** On success, close the modal and display a green toast (e.g., "Payment recorded successfully."). On failure, display a specific error toast.
+
+---
+
+## SCREEN 4.5 : UPLOAD BANK STATEMENT
+
+### 1. Overview
+The **Upload Bank Statement** screen provides a facility to upload official bank statements in PDF format. The system processes these statements to automatically detect matching rent payments (e.g., via transaction references or exact amounts) and assists the administrator in bulk payment reconciliation. It is designed to securely handle and parse password-protected bank PDFs.
+
+### 2. Screen Preview
+
+```text
++--------------------------------------------------------------+
+|                 Upload Bank Statement                        |
+|--------------------------------------------------------------|
+| Bank Name *          [ Dropdown v ]                          |
+| Statement Month *    [ Month Picker v ]                      |
+| Upload PDF *         [ Choose File ] (No file chosen)        |
+| PDF Password         [____________________]                  |
+|                                                              |
+|             [ Cancel ]             [ Upload ]                |
++--------------------------------------------------------------+
+```
+
+### 3. Screen Fields Table
+
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Bank Name** | Dropdown | Yes | Predefined list of supported banks. | `HDFC Bank` | Required for selecting correct parsing logic. |
+| **Statement Month**| Month Picker | Yes | Valid past or current month. | `August 2026` | Helps narrow down reconciliation scope. |
+| **Upload PDF** | File Upload | Yes | Must be a `.pdf` file. Max 10MB. | `statement.pdf` | - |
+| **PDF Password** | Password Input| No | Text input. | `Rahu123` | Required only if the PDF is encrypted. |
+| **Upload** | Button | N/A | Submits the file. Disabled during processing. | N/A | Shows progress indicator when active. |
+| **Cancel** | Button | N/A | Closes the modal. | N/A | - |
+
+### 4. Validations
+
+*   **Required Fields:** `Bank Name`, `Statement Month`, and `Upload PDF` are strictly required.
+*   **File Validation:** 
+    *   Only files with a `.pdf` extension/MIME type are permitted.
+    *   Maximum file size validation (e.g., reject files > 10MB).
+*   **Invalid or Corrupted PDF:** If the file cannot be parsed or read, display an error: "Invalid or corrupted PDF file uploaded."
+*   **Incorrect PDF Password:** If the PDF is encrypted and the provided password fails to decrypt it, display: "Incorrect PDF Password."
+*   **Duplicate Statement Detection:** Warn or reject if a statement for the exact same Bank and Month has already been processed recently, prompting the user for confirmation.
+*   **Upload Progress Handling:** Display a loading spinner or progress bar to indicate that parsing is underway.
+*   **Concurrency:** Prevent multiple file uploads while one is actively processing by disabling the interface.
+*   **Proper Messages:** Display a success toast summarizing reconciliation (e.g., "Statement uploaded. 15 payments matched.") or a detailed error message upon failure.
+
+---
+
