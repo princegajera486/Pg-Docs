@@ -213,6 +213,63 @@ The **View Member** screen provides a comprehensive, read-only 360-degree profil
 *   **URL Parameter Integrity:** The system must validate the Member ID passed in the URL. If the ID is invalid or the member does not exist, display an appropriate error (e.g., "Member not found") and redirect to the Member List.
 *   **File Access Authorization:** Secure the document download links generated in the 'Identity Verification' and 'Documents' tabs to ensure they cannot be accessed without an active administrator session.
 
+### Payment History Tab
+
+#### 1. Overview
+The Payment History tab provides a dedicated, read-only view of all monthly rent transactions for the selected member directly within their profile. This unified view enables the administrator to quickly review the member's complete payment history, track due dates, verify payment statuses, and inspect uploaded proofs without navigating away from the View Member page, streamlining the auditing process.
+
+#### 2. Screen Preview
+```text
++------------------------------------------------------------------------------------------------------------------------------------------------+
+| View Member                                                                                                                                    |
+|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Personal Information | Identity | Address | Stay Details | Rent Details | Payment History | Documents                                         |
+|------------------------------------------------------------------------------------------------------------------------------------------------|
+| Search : [_________________________]                                                                                                           |
+|                                                                                                                                                |
+| Month | Rent Amount | Due Date | Payment Date | Payment Status | Transaction ID | Screenshot | Verified By | Verified On | Actions         |
+|-------|-------------|----------|--------------|----------------|----------------|------------|-------------|-------------|-----------------|
+| Jul   | ₹6,000      | 05-Jul   | 04-Jul       | Paid           | TXN12345       | View       | Admin       | 04-Jul      | View Screenshot |
+| Jun   | ₹6,000      | 05-Jun   | 06-Jun       | Paid           | TXN12312       | View       | Admin       | 06-Jun      | View Screenshot |
+| May   | ₹6,000      | 05-May   | --           | Pending        | --             | --         | --          | --          | --              |
+|                                                                                                                                                |
+| Showing 1-10 of XX Records                                                                      Previous | Next                                |
++------------------------------------------------------------------------------------------------------------------------------------------------+
+```
+
+#### 3. Screen Fields Table
+| Field Name | Type | Required | Validation | Example | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Search** | Text Input | No | Accepts alphanumeric characters. | `TXN123` | Filters by Month, Transaction ID, or Status. |
+| **Month** | Data Column | N/A | Displays the billing month. | `Jul` | - |
+| **Rent Amount** | Data Column | N/A | Formatted as currency. | `₹6,000` | - |
+| **Due Date** | Data Column | N/A | Formatted as Date. | `05-Jul` | - |
+| **Payment Date** | Data Column | N/A | Formatted as Date. Blank if unpaid. | `04-Jul` | - |
+| **Payment Status** | Data Column | N/A | Pending, In Review, Paid, Rejected. | `Paid` | - |
+| **Transaction ID** | Data Column | N/A | Alphanumeric. Blank if not provided. | `TXN12345` | - |
+| **Payment Screenshot**| Link | N/A | Displays 'View' or '--'. | `View` | Indicates if an image is attached. |
+| **Verified By** | Data Column | N/A | Admin name who approved it. | `Admin` | - |
+| **Verified On** | Data Column | N/A | Formatted as Date. | `04-Jul` | - |
+| **Remarks** | Data Column | N/A | Alphanumeric text. | `Late payment` | - |
+| **View Screenshot Action**| Button | N/A | Opens a modal to display the image. | `View Screenshot` | Disabled/Hidden if no screenshot exists. |
+| **Pagination (Prev/Next)**| Buttons | N/A | Controls page navigation. | N/A | Disabled on boundaries. |
+
+#### 4. Validations
+*   **Member Context Enforcement:** Display only payments belonging exclusively to the currently selected member.
+*   **Chronological Order:** Payment history should default to descending order (latest first).
+*   **Empty State Handling:** Handle empty payment history gracefully by displaying a user-friendly "No payment history found" message.
+*   **Status Display Rules:**
+    *   Display "Pending" for unpaid rent.
+    *   Display "In Review" for submitted payments awaiting verification.
+    *   Display "Rejected" for rejected payments.
+    *   Display "Paid" for verified payments.
+*   **Screenshot Availability:** Screenshot preview action must only be available when a screenshot file actively exists in the system.
+*   **Transaction ID Display:** Transaction ID should be displayed only if available and submitted by the member; otherwise, render a placeholder (e.g., `--`).
+*   **Read-Only Data:** All data rendered within this tab must be strictly read-only to prevent unauthorized inline edits.
+*   **Search Interoperability:** Search functionality should instantly filter the payment history specifically by Month, Transaction ID, or Payment Status.
+*   **Pagination Functionality:** Pagination should work correctly and reset appropriately when a new search query is executed.
+*   **Graceful Degradation:** Handle missing, corrupted, or deleted payment records gracefully without crashing the UI.
+
 ---
 
 ## SCREEN 4 : EDIT MEMBER
