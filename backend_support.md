@@ -95,32 +95,68 @@ Receive Credentials -> Validate Email Format -> Query Firebase `admins` node by 
 ## MODULE 2: PG MANAGEMENT
 
 ### 1. Module Overview
-Manages the properties, rooms, and bed configurations across multiple PG locations.
+Manages the properties, rooms, and bed configurations across multiple PG locations based on the multi-step onboarding form.
 
 ### 2. Firebase Database Structure
 - **Node Name**: `pg_properties`
 - **Purpose**: Stores details of all PG buildings.
 - **Child Nodes**: `{pg_id}`, `rooms`, `beds`
-- **Data Types**: String, Integer, Boolean
-- **Required Fields**: `name`, `address`, `total_rooms`, `status`
-- **Optional Fields**: `facilities`
+- **Data Types**: String, Integer, Boolean, Array
+- **Required Fields**: 
+  - **Basic Info**: `code`, `name`, `type`, `gender_type`, `contact_person`, `mobile`
+  - **Address**: `address_line_1`, `area`, `city`, `state`, `pincode`, `country`
+  - **Config**: `no_of_rooms`, `property_status`
+- **Optional Fields**: 
+  - **Basic Info**: `description`
+  - **Address**: `address_line_2`, `landmark`
+  - **Amenities**: `amenities` (List of strings)
 - **Firebase Key Structure**: Firebase auto-generated Push IDs (e.g., `-Nabc123...`)
 - **Sample JSON**:
 ```json
 {
   "pg_properties": {
     "-N_PG123": {
+      "code": "PG001",
       "name": "Sunrise PG",
-      "address": "Block A, Tech Park",
-      "total_rooms": 10,
-      "status": "Active",
+      "type": "Coliving",
+      "gender_type": "Unisex",
+      "contact_person": "Ramesh",
+      "mobile": "9876543210",
+      "description": "Premium PG in IT Park",
+      "address_line_1": "Block A, Tech Park",
+      "address_line_2": "Sector 1",
+      "area": "Hinjewadi",
+      "landmark": "Phase 1",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "pincode": "411057",
+      "country": "India",
+      "no_of_rooms": 2,
+      "property_status": "Active",
+      "amenities": ["WiFi", "RO Water", "Washing Machine"],
       "rooms": {
         "-N_RM456": {
-          "room_number": "101",
-          "capacity": 2,
+          "room_number": "A 101",
+          "sharing": 2,
+          "rent": 8500,
           "beds": {
             "-N_BD789": {
-              "bed_number": "B1",
+              "bed_number": "A 101-B1",
+              "is_occupied": false
+            },
+            "-N_BD790": {
+              "bed_number": "A 101-B2",
+              "is_occupied": false
+            }
+          }
+        },
+        "-N_RM457": {
+          "room_number": "A 102",
+          "sharing": 1,
+          "rent": 15000,
+          "beds": {
+            "-N_BD791": {
+              "bed_number": "A 102-B1",
               "is_occupied": false
             }
           }
@@ -134,13 +170,14 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 ### 3. Firebase Relationships
 - Nested structure: `pg_properties` -> `rooms` -> `beds`.
 - Bed IDs are referenced by the `Members` node to indicate occupancy.
+- Room configuration is dynamically generated based on `no_of_rooms`. For each room, `beds` are auto-generated based on the `sharing` value.
 - Real-time updates: Changing a bed's `is_occupied` to `true` reflects immediately in Dashboard aggregations.
 
 ### 4. FastAPI Endpoints
 | Method | Endpoint | Description | Authentication |
 | :--- | :--- | :--- | :--- |
 | GET | `/api/v1/pg` | List all PGs | Yes |
-| POST | `/api/v1/pg` | Create new PG | Yes |
+| POST | `/api/v1/pg` | Create new PG (Full form details + Rooms) | Yes |
 | GET | `/api/v1/pg/{id}` | Get PG details | Yes |
 | PUT | `/api/v1/pg/{id}` | Update PG (Edit API) | Yes |
 | PATCH | `/api/v1/pg/{id}/status` | Change PG status | Yes |
@@ -150,24 +187,36 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 **POST `/api/v1/pg` (Create API)**
 ```json
 {
+  "code": "PG001",
   "name": "Sunrise PG",
-  "address": "Block A",
-  "total_rooms": 10,
-  "status": "Active"
-}
-```
-**PUT `/api/v1/pg/{id}` (Edit API)**
-```json
-{
-  "name": "Sunrise PG Updated",
-  "address": "Block B",
-  "total_rooms": 12
-}
-```
-**PATCH `/api/v1/pg/{id}/status` (Status Update API)**
-```json
-{
-  "status": "Inactive"
+  "type": "Coliving",
+  "gender_type": "Unisex",
+  "contact_person": "Ramesh",
+  "mobile": "9876543210",
+  "description": "Premium PG in IT Park",
+  "address_line_1": "Block A, Tech Park",
+  "address_line_2": "Sector 1",
+  "area": "Hinjewadi",
+  "landmark": "Phase 1",
+  "city": "Pune",
+  "state": "Maharashtra",
+  "pincode": "411057",
+  "country": "India",
+  "no_of_rooms": 2,
+  "property_status": "Active",
+  "amenities": ["WiFi", "RO Water", "Washing Machine"],
+  "rooms": [
+    {
+      "room_number": "A 101",
+      "sharing": 2,
+      "rent": 8500
+    },
+    {
+      "room_number": "A 102",
+      "sharing": 1,
+      "rent": 15000
+    }
+  ]
 }
 ```
 
@@ -182,18 +231,19 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 **Error (409 Conflict)**
 ```json
 {
-  "detail": "PG name already exists"
+  "detail": "PG code already exists"
 }
 ```
 
 ### 7. Backend Validation Rules
-- **Required validation**: `name`, `address` required.
-- **Duplicate validation**: Ensure PG name doesn't exist.
+- **Required validation**: All fields marked required (e.g., `code`, `name`, `type`, `address_line_1`, `city`, `pincode`, `no_of_rooms`, `property_status`, etc.).
+- **Dynamic Rooms Validation**: The number of items in the `rooms` array must exactly equal `no_of_rooms`. For each room, `room_number`, `sharing`, and `rent` are required.
+- **Duplicate validation**: Ensure PG `code` and `name` don't already exist.
 - **Business validation**: Cannot delete a PG if it has occupied beds.
 - **Firebase validation**: Verify valid Firebase Key for PUT/PATCH/DELETE.
 
 ### 8. Business Logic
-Receive Payload -> Validate fields -> Check Duplicate Name -> Create PG node in `pg_properties` -> Return Success.
+Receive Payload -> Validate fields -> Check Dynamic Rooms count against `no_of_rooms` -> Check Duplicate Code/Name -> Create PG node in `pg_properties` -> Iterate through `rooms` array -> Create room nodes -> Auto-generate `beds` based on the `sharing` value for each room -> Return Success.
 
 ---
 
