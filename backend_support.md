@@ -293,13 +293,14 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
   - **Identity Verification**: `aadhaar_number`
   - **Emergency Contact**: `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`
   - **Address Details**: `address_line_1`, `country`, `state`, `city`, `pincode`
-  - **Stay Details**: `pg_id`, `room_id`, `bed_id`
+  - **Stay Details**: `pg_type`, `pg_id`, `room_id`
   - **Rent Details**: `monthly_rent`, `security_deposit`, `maintenance_charge`, `rent_due_date`, `notice_period_days`
   - **Member Status**: `status`
 - **Optional Fields**: 
   - **Personal Info**: `alternate_mobile_number`, `email`
   - **Identity Verification**: `pan_number`, `driving_licence_number`
   - **Address Details**: `address_line_2`
+  - **Stay Details**: `bed_id` (Required only if `pg_type` == 'PG')
   - **Member Status**: `status_reason` (required if status is 'Notice Period')
 - **Firebase Key Structure**: Firebase auto-generated Push IDs.
 - **Sample JSON**:
@@ -327,6 +328,7 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
       "state": "Maharashtra",
       "city": "Pune",
       "pincode": "411014",
+      "pg_type": "PG",
       "pg_id": "-N_PG123",
       "room_id": "-N_RM456",
       "bed_id": "-N_BD789",
@@ -346,9 +348,10 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 ### 3. Firebase Relationships
 - `Member` -> `PG/Room/Bed`: Stores the IDs to reference the allocated bed.
 - **Stay Details Selection Logic**: 
-  - `PG Name` dropdown lists all Active PGs.
-  - `Room Number` dropdown lists rooms in the selected PG that are not fully occupied.
-  - `Bed` dropdown lists beds in the selected room where `is_occupied == false`.
+  - `PG Type` dropdown specifies if looking for a 'PG' or 'Apartment'.
+  - `PG Name` dropdown lists Active properties matching the selected `pg_type`.
+  - `Room/Flat Number` dropdown lists rooms or flats in the selected property that are not fully occupied.
+  - `Bed` dropdown lists beds in the selected room where `is_occupied == false`. (This field is hidden and not required if `pg_type` is 'Apartment').
 - `Member` -> `Rent Details`: Referenced in the `rent_records` node via `member_id`.
 - Requires transactional update when assigning a bed (Member node created + Bed node updated to `is_occupied: true`).
 
@@ -381,6 +384,7 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
   "state": "Maharashtra",
   "city": "Pune",
   "pincode": "411014",
+  "pg_type": "PG",
   "pg_id": "-N_PG123",
   "room_id": "-N_RM456",
   "bed_id": "-N_BD789",
@@ -424,15 +428,15 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 ```
 
 ### 7. Backend Validation Rules
-- **Required validation**: All required fields across Personal, Identity, Emergency, Address, Stay, Rent, and Status sections.
+- **Required validation**: All required fields across sections. `bed_id` is required only if `pg_type == 'PG'`.
 - **Conditional validation**: If `status` == "Notice Period", `status_reason` is required.
 - **Duplicate validation**: Mobile number and Aadhaar number must be unique.
-- **Business validation**: Ensure selected PG is Active, Room is not fully occupied, and selected Bed `is_occupied == false`.
-- **Relationship validation**: `pg_id`, `room_id`, and `bed_id` must exist.
+- **Business validation**: Ensure selected PG is Active, Room is not fully occupied, and (if PG) selected Bed `is_occupied == false`.
+- **Relationship validation**: `pg_id`, `room_id`, and (if PG) `bed_id` must exist.
 - **Firebase validation**: Concurrent modification check using Firebase transactions.
 
 ### 8. Business Logic
-Member Registration -> Validate fields -> Validate PG is active -> Validate Room capacity -> Validate Bed `is_occupied == false` -> Begin Transaction -> Save Member in `members` -> Update Bed `is_occupied=true` -> Generate Payment Record in `rent_records` -> Commit Transaction -> Return Success.
+Member Registration -> Validate fields -> Validate PG is active -> Validate Room capacity -> If `pg_type == 'PG'`, Validate Bed `is_occupied == false` -> Begin Transaction -> Save Member in `members` -> If `pg_type == 'PG'`, Update Bed `is_occupied=true` -> Generate Payment Record in `rent_records` -> Commit Transaction -> Return Success.
 
 ---
 
