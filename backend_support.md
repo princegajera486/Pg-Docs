@@ -106,6 +106,9 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
   - **Basic Info**: `code`, `name`, `type`, `gender_type`, `contact_person`, `mobile`
   - **Address**: `address_line_1`, `area`, `city`, `state`, `pincode`, `country`
   - **Config**: `no_of_rooms`, `property_status`
+- **Dynamic Room Fields** (Depends on `type`):
+  - **If type == 'PG'**: `room_number`, `sharing`, `rent`
+  - **If type == 'Apartment'**: `flat_no`, `bhk`, `rent`
 - **Optional Fields**: 
   - **Basic Info**: `description`
   - **Address**: `address_line_2`, `landmark`
@@ -168,9 +171,11 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 ```
 
 ### 3. Firebase Relationships
-- Nested structure: `pg_properties` -> `rooms` -> `beds`.
-- Bed IDs are referenced by the `Members` node to indicate occupancy.
-- Room configuration is dynamically generated based on `no_of_rooms`. For each room, `beds` are auto-generated based on the `sharing` value.
+- Nested structure: `pg_properties` -> `rooms` (acting as flats for Apartments) -> `beds` (only for PGs).
+- Bed IDs are referenced by the `Members` node to indicate occupancy (for PG type).
+- Room/Flat configuration is dynamically generated based on `no_of_rooms`. 
+  - If `type == 'PG'`, `beds` are auto-generated based on the `sharing` value.
+  - If `type == 'Apartment'`, `beds` are NOT generated, and it represents a flat (`flat_no`, `bhk`).
 - Real-time updates: Changing a bed's `is_occupied` to `true` reflects immediately in Dashboard aggregations.
 
 ### 4. FastAPI Endpoints
@@ -261,13 +266,15 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 
 ### 7. Backend Validation Rules
 - **Required validation**: All fields marked required (e.g., `code`, `name`, `type`, `address_line_1`, `city`, `pincode`, `no_of_rooms`, `property_status`, etc.).
-- **Dynamic Rooms Validation**: The number of items in the `rooms` array must exactly equal `no_of_rooms`. For each room, `room_number`, `sharing`, and `rent` are required.
+- **Dynamic Rooms Validation**: The number of items in the `rooms` array must exactly equal `no_of_rooms`. 
+  - For `PG` type, `room_number`, `sharing`, and `rent` are required.
+  - For `Apartment` type, `flat_no`, `bhk`, and `rent` are required.
 - **Duplicate validation**: Ensure PG `code` and `name` don't already exist.
-- **Business validation**: Cannot delete a PG if it has occupied beds.
+- **Business validation**: Cannot delete a PG if it has occupied beds or active flats.
 - **Firebase validation**: Verify valid Firebase Key for PUT/PATCH/DELETE.
 
 ### 8. Business Logic
-Receive Payload -> Validate fields -> Check Dynamic Rooms count against `no_of_rooms` -> Check Duplicate Code/Name -> Create PG node in `pg_properties` -> Iterate through `rooms` array -> Create room nodes -> Auto-generate `beds` based on the `sharing` value for each room -> Return Success.
+Receive Payload -> Validate fields -> Check Dynamic Rooms count against `no_of_rooms` -> Check Duplicate Code/Name -> Create PG node in `pg_properties` -> Iterate through `rooms` array -> Create room/flat nodes -> If `type == 'PG'`, auto-generate `beds` based on `sharing` -> Return Success.
 
 ---
 
