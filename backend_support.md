@@ -103,7 +103,7 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 - **Child Nodes**: `{pg_id}`, `rooms`, `beds`
 - **Data Types**: String, Integer, Boolean, Array
 - **Required Fields**: 
-  - **Basic Info**: `code`, `name`, `type`, `gender_type`, `contact_person`, `mobile`
+  - **Basic Info**: `code`, `name`, `pg_type`, `living_type`, `contact_person`, `mobile`
   - **Address**: `address_line_1`, `area`, `city`, `state`, `pincode`, `country`
   - **Config**: `no_of_rooms`, `property_status`
 - **Dynamic Room Fields** (Depends on `type`):
@@ -121,8 +121,8 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
     "-N_PG123": {
       "code": "PG001",
       "name": "Sunrise PG",
-      "type": "Coliving",
-      "gender_type": "Unisex",
+      "pg_type": "PG",
+      "living_type": "coliving",
       "contact_person": "Ramesh",
       "mobile": "9876543210",
       "description": "Premium PG in IT Park",
@@ -174,8 +174,8 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 - Nested structure: `pg_properties` -> `rooms` (acting as flats for Apartments) -> `beds` (only for PGs).
 - Bed IDs are referenced by the `Members` node to indicate occupancy (for PG type).
 - Room/Flat configuration is dynamically generated based on `no_of_rooms`. 
-  - If `type == 'PG'`, `beds` are auto-generated based on the `sharing` value.
-  - If `type == 'Apartment'`, `beds` are NOT generated, and it represents a flat (`flat_no`, `bhk`).
+  - If `pg-type == 'PG'`, `beds` are auto-generated based on the `sharing` value.
+  - If `pg_type == 'Apartment'`, `beds` are NOT generated, and it represents a flat (`flat_no`, `bhk`).
 - Real-time updates: Changing a bed's `is_occupied` to `true` reflects immediately in Dashboard aggregations.
 
 ### 4. FastAPI Endpoints
@@ -195,8 +195,8 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 {
   "code": "PG001",
   "name": "Sunrise PG",
-  "type": "Coliving",
-  "gender_type": "Unisex",
+  "pg_type": "Coliving",
+  "living_type": "Unisex",
   "contact_person": "Ramesh",
   "mobile": "9876543210",
   "description": "Premium PG in IT Park",
