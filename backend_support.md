@@ -347,7 +347,7 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 
 ### 3. Firebase Relationships
 - `Member` -> `PG/Room/Bed`: Stores the IDs to reference the allocated bed.
-- **Stay Details Selection Logic**: 
+- **Stay Details Selection Logic**: (All dropdown values are fetched live from the database via API to ensure accurate availability)
   - `PG Type` dropdown specifies if looking for a 'PG' or 'Apartment'.
   - `PG Name` dropdown lists Active properties matching the selected `pg_type`.
   - `Room/Flat Number` dropdown lists rooms or flats in the selected property that are not fully occupied.
@@ -663,6 +663,69 @@ Aggregates key metrics for the admin interface, requiring high-performance reads
 
 ### 8. Business Logic
 Receive Request -> Read `dashboard_cache` node (for fast response) -> If cache expired, trigger background refresh -> Return JSON -> Return Success.
+
+---
+
+## MODULE 7: DASHBOARD FILTERS
+
+### 1. Module Overview
+Defines the global filter parameters used across the Dashboard APIs (KPIs, Charts, Tables) to dynamically narrow down data based on user selections.
+
+### 2. Supported Filters
+The frontend will provide these filters as query parameters when requesting dashboard data:
+
+| Filter Name | Type | Options / Source | Description |
+| :--- | :--- | :--- | :--- |
+| `pg_id` | Dropdown | DB (Active PGs via API) | Filters data for a specific property. |
+| `property_type` | Dropdown | `PG`, `Apartment` | Filters by the type of property. |
+| `living_type` | Dropdown | `Gents`, `Ladies`, `Coliving` | Filters by the demographic type of the property. |
+| `member_status` | Dropdown | `Active`, `Inactive` | Filters data relating to members by their current status. |
+| `rent_status` | Dropdown | `Paid`, `Pending`, `Overdue` | Filters financial data/transactions by rent status. |
+| `month` | Dropdown | `January` to `December` | Filters data for a specific month. |
+| `year` | Dropdown | e.g., `2023`, `2024` | Filters data for a specific year. |
+| `date_range` | Date Picker | `from_date`, `to_date` (ISO 8601) | Custom date range selection from a calendar. |
+| `quick_range` | Dropdown | `Today`, `This Week`, `This Month`, `Last Month` | Pre-defined relative date ranges. |
+
+### 3. API Query Parameter Examples
+When calling `/api/v1/dashboard/kpis` or `/api/v1/dashboard/charts`, the filters will be appended to the URL:
+```text
+GET /api/v1/dashboard/kpis?pg_id=-N_PG123&rent_status=Pending&quick_range=This%20Month
+GET /api/v1/dashboard/charts?property_type=Apartment&month=October&year=2023
+```
+
+### 4. Backend Processing Logic
+- The Dashboard service receives the filter query parameters.
+- It translates time-based filters (`month`, `year`, `quick_range`) into explicit `from_date` and `to_date` boundaries.
+- It applies these constraints to filter the raw data nodes (`members`, `pg_properties`, `rent_records`) in memory if necessary, or constructs Firebase queries where possible.
+- If filters are applied, the backend may need to bypass the generic `dashboard_cache` to calculate specific filtered metrics on the fly.
+
+---
+
+## MODULE 8: PG MANAGEMENT FILTERS
+
+### 1. Module Overview
+Defines the filter parameters used in the PG Management module to dynamically filter the list of properties requested by the frontend.
+
+### 2. Supported Filters
+The frontend will provide these filters as query parameters when calling the `GET /api/v1/pg` endpoint:
+
+| Filter Name | Type | Options / Source | Description |
+| :--- | :--- | :--- | :--- |
+| `property_type` | Dropdown | `PG`, `Apartment` | Filters properties by their type. |
+| `living_type` | Dropdown | `Gents`, `Ladies`, `Coliving` | Filters properties by their demographic type. |
+| `property_status` | Dropdown | `Active`, `Inactive` | Filters properties by their current status. |
+| `city` | Dropdown | DB (Distinct list of cities from PG nodes) | Filters properties located in a specific city. |
+| `state` | Dropdown | DB (Distinct list of states from PG nodes) | Filters properties located in a specific state. |
+
+### 3. API Query Parameter Examples
+When calling `/api/v1/pg`, the filters will be appended to the URL:
+```text
+GET /api/v1/pg?property_type=PG&living_type=Gents&property_status=Active&city=Pune
+```
+
+### 4. Backend Processing Logic
+- The PG service receives the filter query parameters.
+- Since Firebase Realtime Database has limited complex querying capabilities, the backend may fetch a broad list (or filter by one indexed key like `property_status`), and then apply the remaining filters (like `city`, `state`, etc.) in-memory before paginating and returning the list to the frontend.
 
 ---
 
