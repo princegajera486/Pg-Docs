@@ -177,6 +177,7 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 | Method | Endpoint | Description | Authentication |
 | :--- | :--- | :--- | :--- |
 | GET | `/api/v1/pg` | List all PGs | Yes |
+| GET | `/api/v1/pg/availability` | Get active PGs with available rooms/beds | Yes |
 | POST | `/api/v1/pg` | Create new PG (Full form details + Rooms) | Yes |
 | GET | `/api/v1/pg/{id}` | Get PG details | Yes |
 | PUT | `/api/v1/pg/{id}` | Update PG (Edit API) | Yes |
@@ -221,6 +222,29 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 ```
 
 ### 6. Response Payload
+**GET `/api/v1/pg/availability` (Dropdowns API)**
+```json
+[
+  {
+    "pg_id": "-N_PG123",
+    "pg_name": "Sunrise PG",
+    "rooms": [
+      {
+        "room_id": "-N_RM456",
+        "room_number": "A 101",
+        "rent": 8500,
+        "available_beds": [
+          {
+            "bed_id": "-N_BD789",
+            "bed_number": "A 101-B1"
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
 **Success (201 Created)**
 ```json
 {
@@ -250,28 +274,62 @@ Receive Payload -> Validate fields -> Check Dynamic Rooms count against `no_of_r
 ## MODULE 3: MEMBER MANAGEMENT
 
 ### 1. Module Overview
-Handles tenant lifecycle, including KYC document links, bed allocation, and rent mapping.
+Handles tenant lifecycle, including KYC document links, bed allocation, and rent mapping based on the multi-step onboarding form.
 
 ### 2. Firebase Database Structure
 - **Node Name**: `members`
 - **Purpose**: Store tenant profiles.
 - **Child Nodes**: `{member_id}`
 - **Data Types**: String, Integer
-- **Required Fields**: `name`, `mobile`, `pg_id`, `room_id`, `bed_id`, `rent_amount`, `status`
-- **Optional Fields**: `kyc_urls`
+- **Required Fields**: 
+  - **Personal Info**: `full_name`, `mobile_number`, `occupation`, `dob`, `gender`, `company_college_name`
+  - **Identity Verification**: `aadhaar_number`
+  - **Emergency Contact**: `emergency_contact_name`, `emergency_contact_relationship`, `emergency_contact_number`
+  - **Address Details**: `address_line_1`, `country`, `state`, `city`, `pincode`
+  - **Stay Details**: `pg_id`, `room_id`, `bed_id`
+  - **Rent Details**: `monthly_rent`, `security_deposit`, `maintenance_charge`, `rent_due_date`, `notice_period_days`
+  - **Member Status**: `status`
+- **Optional Fields**: 
+  - **Personal Info**: `alternate_mobile_number`, `email`
+  - **Identity Verification**: `pan_number`, `driving_licence_number`
+  - **Address Details**: `address_line_2`
+  - **Member Status**: `status_reason` (required if status is 'Notice Period')
 - **Firebase Key Structure**: Firebase auto-generated Push IDs.
 - **Sample JSON**:
 ```json
 {
   "members": {
     "-N_MEM001": {
-      "name": "John Doe",
-      "mobile": "9876543210",
+      "full_name": "John Doe",
+      "mobile_number": "9876543210",
+      "alternate_mobile_number": "9876543211",
+      "email": "john@example.com",
+      "occupation": "Student",
+      "dob": "1998-05-15",
+      "gender": "Male",
+      "company_college_name": "MIT College",
+      "aadhaar_number": "123456789012",
+      "pan_number": "ABCDE1234F",
+      "driving_licence_number": "MH12123456789",
+      "emergency_contact_name": "Jane Doe",
+      "emergency_contact_relationship": "Mother",
+      "emergency_contact_number": "9988776655",
+      "address_line_1": "Flat 101, Oakwood",
+      "address_line_2": "",
+      "country": "India",
+      "state": "Maharashtra",
+      "city": "Pune",
+      "pincode": "411014",
       "pg_id": "-N_PG123",
       "room_id": "-N_RM456",
       "bed_id": "-N_BD789",
-      "rent_amount": 8000,
+      "monthly_rent": 8000,
+      "security_deposit": 10000,
+      "maintenance_charge": 500,
+      "rent_due_date": 5,
+      "notice_period_days": 30,
       "status": "Active",
+      "status_reason": "",
       "joining_date": "2023-10-01"
     }
   }
@@ -280,6 +338,10 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 
 ### 3. Firebase Relationships
 - `Member` -> `PG/Room/Bed`: Stores the IDs to reference the allocated bed.
+- **Stay Details Selection Logic**: 
+  - `PG Name` dropdown lists all Active PGs.
+  - `Room Number` dropdown lists rooms in the selected PG that are not fully occupied.
+  - `Bed` dropdown lists beds in the selected room where `is_occupied == false`.
 - `Member` -> `Rent Details`: Referenced in the `rent_records` node via `member_id`.
 - Requires transactional update when assigning a bed (Member node created + Bed node updated to `is_occupied: true`).
 
@@ -297,20 +359,39 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 **POST `/api/v1/members` (Create API)**
 ```json
 {
-  "name": "John Doe",
-  "mobile": "9876543210",
+  "full_name": "John Doe",
+  "mobile_number": "9876543210",
+  "occupation": "Student",
+  "dob": "1998-05-15",
+  "gender": "Male",
+  "company_college_name": "MIT College",
+  "aadhaar_number": "123456789012",
+  "emergency_contact_name": "Jane Doe",
+  "emergency_contact_relationship": "Mother",
+  "emergency_contact_number": "9988776655",
+  "address_line_1": "Flat 101, Oakwood",
+  "country": "India",
+  "state": "Maharashtra",
+  "city": "Pune",
+  "pincode": "411014",
   "pg_id": "-N_PG123",
   "room_id": "-N_RM456",
   "bed_id": "-N_BD789",
-  "rent_amount": 8000
+  "monthly_rent": 8000,
+  "security_deposit": 10000,
+  "maintenance_charge": 500,
+  "rent_due_date": 5,
+  "notice_period_days": 30,
+  "status": "Active"
 }
 ```
+
 **PUT `/api/v1/members/{id}` (Edit API)**
 ```json
 {
-  "name": "John Doe",
-  "mobile": "9876543210",
-  "rent_amount": 8500
+  "monthly_rent": 8500,
+  "status": "Notice Period",
+  "status_reason": "Relocating to another city"
 }
 ```
 **PATCH `/api/v1/members/{id}/status` (Status Update API)**
@@ -336,14 +417,15 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 ```
 
 ### 7. Backend Validation Rules
-- **Required validation**: All identity and allocation fields.
-- **Duplicate validation**: Mobile number must be unique.
-- **Business validation**: Ensure selected bed `is_occupied == false`.
+- **Required validation**: All required fields across Personal, Identity, Emergency, Address, Stay, Rent, and Status sections.
+- **Conditional validation**: If `status` == "Notice Period", `status_reason` is required.
+- **Duplicate validation**: Mobile number and Aadhaar number must be unique.
+- **Business validation**: Ensure selected PG is Active, Room is not fully occupied, and selected Bed `is_occupied == false`.
 - **Relationship validation**: `pg_id`, `room_id`, and `bed_id` must exist.
 - **Firebase validation**: Concurrent modification check using Firebase transactions.
 
 ### 8. Business Logic
-Member Registration -> Validate PG -> Validate Room -> Validate Bed -> Begin Transaction -> Save Member in `members` -> Update Bed `is_occupied=true` -> Generate Payment Record in `rent_records` -> Commit Transaction -> Return Success.
+Member Registration -> Validate fields -> Validate PG is active -> Validate Room capacity -> Validate Bed `is_occupied == false` -> Begin Transaction -> Save Member in `members` -> Update Bed `is_occupied=true` -> Generate Payment Record in `rent_records` -> Commit Transaction -> Return Success.
 
 ---
 
