@@ -680,7 +680,7 @@ The frontend will provide these filters as query parameters when requesting dash
 | `property_type` | Dropdown | `PG`, `Apartment` | Filters by the type of property. |
 | `living_type` | Dropdown | `Gents`, `Ladies`, `Coliving` | Filters by the demographic type of the property. |
 | `member_status` | Dropdown | `Active`, `Inactive` | Filters data relating to members by their current status. |
-| `rent_status` | Dropdown | `Paid`, `Pending`, `Overdue` | Filters financial data/transactions by rent status. |
+| `rent_status` | Dropdown | `Paid`, `Pending`, `Overdue`, `In Review` | Filters financial data/transactions by rent status. |
 | `month` | Dropdown | `January` to `December` | Filters data for a specific month. |
 | `year` | Dropdown | e.g., `2023`, `2024` | Filters data for a specific year. |
 | `date_range` | Date Picker | `from_date`, `to_date` (ISO 8601) | Custom date range selection from a calendar. |
@@ -742,7 +742,7 @@ The frontend will provide these filters as query parameters when calling the `GE
 | `pg_id` | Dropdown | DB (Active PGs via API) | Filters members belonging to a specific PG property. |
 | `gender` | Dropdown | `Male`, `Female`, `Other` | Filters members by their gender. |
 | `member_status` | Dropdown | `Active`, `Inactive` | Filters members by their current residency status. |
-| `rent_status` | Dropdown | `Paid`, `Pending`, `Overdue` | Filters members based on their current rent payment status. |
+| `rent_status` | Dropdown | `Paid`, `Pending`, `Overdue`, `In Review` | Filters members based on their current rent payment status. |
 | `joining_date` | Date Picker | `from_date`, `to_date` (ISO 8601) | Custom date range selection for the member's joining date. |
 | `quick_range` | Dropdown | `Today`, `This Week`, `This Month`, `Last Month` | Pre-defined relative date ranges for joining date. |
 
