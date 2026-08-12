@@ -933,3 +933,21 @@ app/
 - **firebase/**: Abstracts the Admin SDK interactions.
 - **schemas/**: Houses Pydantic Request/Response classes.
 - **tasks/**: Contains all Cron routines.
+
+---
+
+## 22. Automated Rent Verification Workflow
+This outlines the end-to-end lifecycle of rent collection from notification to final verification.
+
+1. **Automated Notification**: On the rent due date, a background job automatically sends a WhatsApp message to the user containing a unique checkout link.
+2. **Checkout Page**: When the user opens the link, they are directed to a checkout page offering supported payment platforms (`Google Pay`, `Paytm`, `PhonePe`).
+3. **Frontend OCR Validation**: 
+   - After completing the payment, the user must upload a payment screenshot containing a clear transaction ID.
+   - The frontend runs an OCR (Optical Character Recognition) process to verify the image's clarity.
+   - If the transaction ID is not clearly visible, the frontend immediately prompts the user to resubmit a better screenshot.
+4. **Submission**: Once a valid screenshot is uploaded successfully, the backend updates the member's rent status to `In Review`.
+5. **Admin Bank Statement Upload**: The Admin uploads the official bank statement PDF via the dashboard.
+6. **Backend Matching**: The backend Statement Processing Service parses the bank statement and matches the extracted records against the submitted screenshot transaction IDs.
+7. **Final Status Update**:
+   - If a match is successful, the rent status is updated to `Paid`.
+   - If no match is found (or if verification ultimately fails), the status falls back to `Overdue`.
