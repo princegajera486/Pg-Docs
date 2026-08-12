@@ -729,7 +729,38 @@ GET /api/v1/pg?property_type=PG&living_type=Gents&property_status=Active&city=Pu
 
 ---
 
-## 9. Service Layer
+## MODULE 9: MEMBER MANAGEMENT FILTERS
+
+### 1. Module Overview
+Defines the filter parameters used in the Member Management module to dynamically filter the list of members requested by the frontend.
+
+### 2. Supported Filters
+The frontend will provide these filters as query parameters when calling the `GET /api/v1/members` endpoint:
+
+| Filter Name | Type | Options / Source | Description |
+| :--- | :--- | :--- | :--- |
+| `pg_id` | Dropdown | DB (Active PGs via API) | Filters members belonging to a specific PG property. |
+| `gender` | Dropdown | `Male`, `Female`, `Other` | Filters members by their gender. |
+| `member_status` | Dropdown | `Active`, `Inactive` | Filters members by their current residency status. |
+| `rent_status` | Dropdown | `Paid`, `Pending`, `Overdue` | Filters members based on their current rent payment status. |
+| `joining_date` | Date Picker | `from_date`, `to_date` (ISO 8601) | Custom date range selection for the member's joining date. |
+| `quick_range` | Dropdown | `Today`, `This Week`, `This Month`, `Last Month` | Pre-defined relative date ranges for joining date. |
+
+### 3. API Query Parameter Examples
+When calling `/api/v1/members`, the filters will be appended to the URL:
+```text
+GET /api/v1/members?pg_id=-N_PG123&member_status=Active&rent_status=Pending
+GET /api/v1/members?gender=Female&quick_range=This%20Month
+```
+
+### 4. Backend Processing Logic
+- The Member service receives the filter query parameters from the `GET /api/v1/members` request.
+- It translates time-based filters (`quick_range`) into explicit `from_date` and `to_date` boundaries.
+- The backend queries the `members` node (potentially utilizing an index on `pg_id` or `status`) and then applies the remaining filters (like `gender`, `rent_status`, date ranges) in-memory before paginating and returning the final list to the frontend.
+
+---
+
+## 10. Service Layer
 The architecture uses Service Layer classes to separate business logic from routing.
 - **AuthenticationService**: Handles JWT creation, payload decoding, and password hashing.
 - **DashboardService**: Fetches and aggregates KPI data. Uses Firebase queries to count metrics.
@@ -742,7 +773,7 @@ The architecture uses Service Layer classes to separate business logic from rout
 
 ---
 
-## 10. Firebase Operations
+## 11. Firebase Operations
 Firebase Realtime Database interactions:
 - **Create**: Using `.push()` equivalent in Admin SDK to auto-generate unique keys.
 - **Read**: Using `.get()` for single fetch, `.order_by_child()` for filtering (e.g., fetching active members).
@@ -756,7 +787,7 @@ Firebase Realtime Database interactions:
 
 ---
 
-## 11. Authentication
+## 12. Authentication
 - **JWT Authentication**: Secure API endpoints via stateless JSON Web Tokens.
 - **Login Flow**: Admin provides email/password -> Backend verifies against Firebase `admins` node -> Returns JWT.
 - **Access Token**: Short-lived (e.g., 15 mins).
@@ -767,7 +798,7 @@ Firebase Realtime Database interactions:
 
 ---
 
-## 12. Exception Handling
+## 13. Exception Handling
 FastAPI Exception Handlers to return standardized JSON responses.
 - **ValidationException** (422): Pydantic input validation failures.
 - **FirebaseException** (500): Database connectivity or SDK errors.
