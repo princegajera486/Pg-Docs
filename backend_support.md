@@ -182,11 +182,9 @@ Manages the properties, rooms, and bed configurations across multiple PG locatio
 | Method | Endpoint | Description | Authentication |
 | :--- | :--- | :--- | :--- |
 | GET | `/api/v1/pg` | List all PGs | Yes |
-| GET | `/api/v1/pg/availability` | Get active PGs with available rooms/beds | Yes |
 | POST | `/api/v1/pg` | Create new PG (Full form details + Rooms) | Yes |
 | GET | `/api/v1/pg/{id}` | Get PG details | Yes |
 | PUT | `/api/v1/pg/{id}` | Update PG (Edit API) | Yes |
-| PATCH | `/api/v1/pg/{id}/status` | Change PG status | Yes |
 | DELETE | `/api/v1/pg/{id}` | Delete PG | Yes |
 
 ### 5. Request Payload
@@ -361,6 +359,7 @@ Handles tenant lifecycle, including KYC document links, bed allocation, and rent
 | GET | `/api/v1/members` | List members | Yes |
 | POST | `/api/v1/members` | Onboard member | Yes |
 | GET | `/api/v1/members/{id}` | Get member details | Yes |
+| GET | `/api/v1/pg/availability` | Get active PGs with available rooms/beds | Yes |
 | PUT | `/api/v1/members/{id}` | Update member (Edit API) | Yes |
 | PATCH | `/api/v1/members/{id}/status` | Update member status | Yes |
 | DELETE | `/api/v1/members/{id}` | Delete member | Yes |
