@@ -647,13 +647,109 @@ Aggregates key metrics for the admin interface, requiring high-performance reads
 (All GET requests, no request payload)
 
 ### 6. Response Payload
-**Success (200 OK)**
+**GET `/api/v1/dashboard/alerts` (Alerts API)**
+```json
+{
+  "rent_overdue": [
+    {
+      "rent_id": "-N_RNT123",
+      "member_id": "-N_MEM123",
+      "pg_id": "-N_PG123",
+      "member_name": "Amit Kumar",
+      "pg_name": "Sunrise PG",
+      "room_number": "Room 101",
+      "rent_amount": 12000,
+      "due_date": "2023-07-05",
+      "overdue_by_days": 38,
+      "status": "Overdue"
+    }
+  ],
+  "pending_approvals": [
+    {
+      "payment_id": "-N_PAY125",
+      "member_id": "-N_MEM125",
+      "pg_id": "-N_PG123",
+      "member_name": "Nikhil Verma",
+      "pg_name": "Sunrise PG",
+      "amount": 12000,
+      "payment_type": "UPI",
+      "submitted_on": "2023-08-12T10:21:00Z"
+    }
+  ]
+}
+```
+
+**GET `/api/v1/dashboard/tables` (Tables API)**
+```json
+{
+  "upcoming_rent_due": [
+    {
+      "rent_id": "-N_RNT124",
+      "member_id": "-N_MEM124",
+      "pg_id": "-N_PG124",
+      "member_name": "Sneha Joshi",
+      "pg_name": "Lotus Villa",
+      "room_number": "Room 205",
+      "rent_amount": 15500,
+      "due_date": "2023-08-05",
+      "days_left": 3,
+      "status": "Upcoming"
+    }
+  ],
+  "recent_payments": [
+    {
+      "payment_id": "-N_PAY126",
+      "member_id": "-N_MEM126",
+      "pg_id": "-N_PG124",
+      "member_name": "Priya Das",
+      "pg_name": "Lotus Villa",
+      "amount": 15500,
+      "date": "2023-08-12T09:15:00Z",
+      "status": "Paid"
+    }
+  ]
+}
+```
+
+**GET `/api/v1/dashboard/kpis` (Success 200 OK)**
 ```json
 {
   "kpis": {
-    "total_members": 45,
-    "revenue": 360000,
-    "pending_dues": 12000
+    "total_pgs": {"value": 12, "active": 11, "inactive": 1},
+    "total_rooms": 450,
+    "total_members": {"value": 382, "active": 350, "notice": 32},
+    "occupancy_rate": {"percentage": 85, "occupied": 382, "trend": "+2.5%"},
+    "rent_collected": {"amount": 3800000, "trend": "+12.4%"},
+    "pending_rent": {"amount": 350000, "members": 45, "trend": "+8.7%"}
+  }
+}
+```
+
+**GET `/api/v1/dashboard/charts` (Charts API)**
+```json
+{
+  "monthly_rent_collection_trend": [
+    {"month": "Mar", "amount": 950000},
+    {"month": "Apr", "amount": 1900000},
+    {"month": "May", "amount": 2850000},
+    {"month": "Jun", "amount": 3800000}
+  ],
+  "revenue_by_pg": [
+    {"pg_name": "Sunrise PG", "revenue": 3800000},
+    {"pg_name": "Lotus Villa", "revenue": 2850000},
+    {"pg_name": "Green View", "revenue": 750000},
+    {"pg_name": "Oasis", "revenue": 950000},
+    {"pg_name": "Park View", "revenue": 450000}
+  ],
+  "occupancy_overview": {
+    "occupied_beds": {"count": 382, "percentage": 85},
+    "vacant_beds": {"count": 68, "percentage": 15}
+  },
+  "member_status_distribution": {
+    "active": {"count": 350, "percentage": 76.1},
+    "notice_period": {"count": 32, "percentage": 7.0},
+    "inactive": {"count": 10, "percentage": 2.2},
+    "vacant_left": {"count": 68, "percentage": 14.8}
   }
 }
 ```
